@@ -1,14 +1,20 @@
-FROM node:20-alpine
+FROM node:20-bookworm-slim
 
-# Instalacja niezbędnych zależności systemowych
-RUN apk add --no-cache libc6-compat python3 make g++ git
+# Instalacja niezbędnych zależności systemowych (Debian/Ubuntu style)
+# python3, make, g++ są potrzebne do budowania modułów natywnych
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Kopiowanie plików zależności
 COPY package.json ./
 
-# Kasujemy lockfile z Windowsa i instalujemy na czysto dla Linuxa
+# Instalacja zależności
 RUN npm install --legacy-peer-deps
 
 # Kopiowanie reszty kodu źródłowego
