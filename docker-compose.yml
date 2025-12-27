@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  lgm-app:
+    container_name: lgm-app-clean
+    build: .
+    restart: always
+    network_mode: "host"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - MAIL_HOST=smtp.lgm4ceramics.pl
+      - MAIL_PORT=465
+      - MAIL_USER=lgm4kontakt
+      - MAIL_PASS=Gk2209dd-1967
+      - MAIL_FROM=kontakt@lgm4ceramics.pl
+      - MAIL_TO=kontakt@lgm4ceramics.pl
+    volumes:
+      - /volume1/Docker/lgm4ceramics/public/assets:/app/.next/standalone/public/assets
+
+  lgm-tunnel:
+    container_name: lgm-tunnel-clean
+    image: cloudflare/cloudflared:latest
+    restart: always
+    network_mode: "host"
+    command: tunnel run --protocol http2
+    environment:
+      - TUNNEL_TOKEN=eyJhIjoiMDVmY2E1OWRiYmExOGRmNWJiY2UxNmU0MTI2ZDMzYjAiLCJ0IjoiNzYyYTUzZDItNjFiZi00ODBjLThkODktYzlkM2ZlOTA0OWY1IiwicyI6IlptUmhaalprWldNdE1tUmlaaTAwTnpjM0xXRTVNMkl0WTJGaFkyVXpORFUzWlRjeCJ9
