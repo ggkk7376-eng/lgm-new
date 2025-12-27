@@ -1,27 +1,22 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Instalacja niezbędnych zależności systemowych
-# libc6-compat, python3, make, g++ są potrzebne do budowania modułów natywnych (np. sharp, contentlayer, swc)
 RUN apk add --no-cache libc6-compat python3 make g++ git
 
 WORKDIR /app
 
 # Kopiowanie plików zależności
-COPY package.json package-lock.json* bun.lockb* ./
+COPY package.json ./
 
-# Instalacja wszystkich zależności (włącznie z devDependencies dla TypeScript i Tailwind)
-# --legacy-peer-deps pomaga przy konfliktach wersji
+# Kasujemy lockfile z Windowsa i instalujemy na czysto dla Linuxa
 RUN npm install --legacy-peer-deps
 
 # Kopiowanie reszty kodu źródłowego
 COPY . .
 
-# Konfiguracja pamięci dla Node.js (zapobiega OOM na słabszych maszynach/NASach)
-# ZMNIEJSZAM DO 1.5GB (4GB to za dużo dla NAS-a i system ubija proces)
-ENV NODE_OPTIONS="--max-old-space-size=1536"
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Zmienne "zaślepki" potrzebne tylko do zbudowania aplikacji (Next.js sprawdza ich obecność)
+# Zmienne "zaślepki" potrzebne tylko do zbudowania aplikacji
 ENV GITHUB_CLIENT_ID="mock_id"
 ENV GITHUB_CLIENT_SECRET="mock_secret"
 ENV GITHUB_REDIRECT_URI="http://localhost:3000/auth/done"
@@ -32,10 +27,9 @@ ENV MAIL_PASS="mock_pass"
 ENV MAIL_FROM="mock@example.com"
 ENV MAIL_TO="mock@example.com"
 
-# Budowanie zmiennych (potrzebne do builda)
 ENV NODE_ENV=production
 
-# Budowanie aplikacji (JAKO ROOT, żeby uniknąć problemów z uprawnieniami do node_modules)
+# Budowanie aplikacji (bez limitu pamięci - niech system zarządza)
 RUN npm run build -- --no-lint
 
 # Kopiowanie plików statycznych do folderu standalone (wymagane dla Next.js standalone)
